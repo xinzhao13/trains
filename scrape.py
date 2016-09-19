@@ -1,4 +1,22 @@
 #!/usr/bin/env python
+
+# scrape.py
+#
+# This script is used to scrape train fare data from the National Rail website.
+# For the full project, see https:github.com/mjwestcott/trains.
+#
+# It's not clear what, if any, rate-limiting is in place, but we sleep for two
+# seconds by default between requests. Each request returns data covering
+# around a three-hour time span. Fares are avaiable for about 90 days in
+# advance of departure, and we try to collect them all. Therefore, completing
+# one scraping session may take around an hour.
+#
+# Assumes a PostgreSQL database is running on localhost with the schema
+# specified in models.py.
+#
+# Invoke using 3-letter station codes, e.g. `python scrape.py PAD SAU`
+# for London Paddington to St Austell, Cornwall.
+
 import sys
 import bs4
 import time
@@ -173,5 +191,4 @@ def scrape(src, dest, delay=2):
     session.close()
 
 if __name__ == "__main__":
-    # Example usage: python scrape.py PAD SAU
     scrape(*sys.argv[1:])
