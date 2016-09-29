@@ -48,14 +48,33 @@ def build_reqs(src, dest):
     """Make list of Request objects. e.g. build_req('PAD', 'SAU')"""
     return [Request(TMPL.format(src=src, dest=dest, date=d, time=t), d)
             for d in DATES           # Every day from today to 90 days ahead
-            for t in TIMES[::3]]     # Every three hours (rudimentary paging)
+            for t in TIMES[::3]]     # Every three hours (because each HTTP req
+                                     # yields about three hours worth of data)
 
 
 def process(req, delay):
+    """Process the given Request object. Yield tuples of (journey, fare) dicts.
+
+    Making an HTTP request for the given URL returns the HTML containing data
+    for several journeys. For instance, if we search for a journey at 2100 on
+    01/01/2016 we may retrieve the 10 journeys nearest in time, covering
+    roughly a three-hour period.
+
+    The aim of this scraping project is to track the change of ticket prices
+    over time. Therefore we want to separate journeys from the fares that are
+    available on them.
+
+    A 'journey' means a trip departing from a source and arriving at a
+    destination at specified times.
+
+    A 'fare' is a ticket price available for purchase for a specific journey.
+
+    As we scrape data over a number of weeks, we will match many fares to each
+    journey. We hope to discover how ticket prices change for a given journey
+    over time.
+    """
     resp = requests.get(req.url)
-    # It's unclear what, if any, rate limiting the National Rail have.
-    # TODO: investigate speeding this up, maybe using Tornado's async HTTP client.
-    time.sleep(random.random() * delay)
+    time.sleep(random.random() * delay) # rate-limiting
     if resp.status_code == 200:
         soup = bs4.BeautifulSoup(resp.text, "html.parser")
         contains_mtx = lambda cssclass: cssclass is not None and "mtx" in cssclass
@@ -80,8 +99,10 @@ def process(req, delay):
 
 
 def parse(tag, date):
-    """Take a tag whose class contains "mtx" and return dicts representing a
-    journey and fare, or False in case of error (such as html not as expected)."""
+    """Take an HTML tag known to contain train data and return dicts
+    representing a journey and associated fare. Return False in case of error
+    (such as HTML not as expected).
+    """
     # Search for the data.
     fb = tag.findChild(class_="fare-breakdown")
     jb = tag.findChild(class_="journey-breakdown")
@@ -153,6 +174,14 @@ def makehash(journey):
 
 
 def scrape(src, dest, delay=2):
+    """Scrape all available data for the given three-digit source and
+    destination codes. Enter the data into PostgreSQL.
+
+    With the default two second delay, may take roughly an hour and should
+    return data over a three-month period starting today.
+
+    e.g. scrape('PAD', 'SAU')
+    """
     engine = create_engine('postgresql://trains:trains@localhost/trains')
     DBSession = sessionmaker(bind=engine)
     session = DBSession()
