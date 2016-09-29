@@ -14,7 +14,7 @@
 # Assumes a PostgreSQL database is running on localhost with the schema
 # specified in models.py.
 #
-# Invoke using 3-letter station codes, e.g. `python scrape.py PAD SAU`
+# Invoke using three-letter station codes, e.g. `python scrape.py PAD SAU`
 # for London Paddington to St Austell, Cornwall.
 
 import sys
@@ -174,7 +174,7 @@ def makehash(journey):
 
 
 def scrape(src, dest, delay=2):
-    """Scrape all available data for the given three-digit source and
+    """Scrape all available data for the given three-letter source and
     destination codes. Enter the data into PostgreSQL.
 
     With the default two second delay, may take roughly an hour and should
