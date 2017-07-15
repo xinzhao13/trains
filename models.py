@@ -34,14 +34,17 @@ class Journey(Base):
             "hash": self.hash,
             "departs": str(self.departs),   # "%Y-%m-%d %H:%M:%S"
             "arrives": str(self.arrives),   # "%Y-%m-%d %H:%M:%S"
-            "duration":
-                {"seconds": self.duration.total_seconds()},
-            "source":
-                {"code": self.src,
-                 "name": self.src_name},
-            "destination":
-                {"code": self.dest,
-                 "name": self.dest_name},
+            "duration": {
+                "seconds": self.duration.total_seconds(),
+            },
+            "source": {
+                "code": self.src,
+                "name": self.src_name,
+            },
+            "destination": {
+                "code": self.dest,
+                "name": self.dest_name,
+            },
             "changes": self.changes,
             "fares": [fare.to_dict_short() for fare in self.fares],
         }
@@ -67,12 +70,13 @@ class Fare(Base):
             "price": self.price,
             "type": self.type,
             "timestamp": str(self.timestamp),   # "%Y-%m-%d %H:%M:%S"
-            "journey":
-                {"jid": self.jid,
-                 "departs": str(self.journey.departs),
-                 "arrives": str(self.journey.arrives),
-                 "source": self.journey.src,
-                 "destination": self.journey.dest},
+            "journey": {
+                "jid": self.jid,
+                "departs": str(self.journey.departs),
+                "arrives": str(self.journey.arrives),
+                "source": self.journey.src,
+                "destination": self.journey.dest,
+            },
         }
 
     def to_dict_short(self):

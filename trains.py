@@ -74,9 +74,12 @@ class JourneysHandler(BaseJSONHandler):
             self.journeyfilters['jid'] = jid
 
         # Base query
-        query = (self.db.query(Journey)
-                        .filter_by(**self.journeyfilters)
-                        .order_by(asc(Journey.departs)))
+        query = (
+            self.db
+            .query(Journey)
+            .filter_by(**self.journeyfilters)
+            .order_by(asc(Journey.departs))
+        )
 
         # Filter by date if requested.
         if self.args['date']:
@@ -96,12 +99,15 @@ class FaresHandler(BaseJSONHandler):
             self.farefilters['fid'] = fid
 
         # Base query
-        query = (self.db.query(Fare)
-                        .filter_by(**self.farefilters)
-                        .join(Fare.journey)
-                        .options(joinedload(Fare.journey))
-                        .filter_by(**self.journeyfilters)
-                        .order_by(asc(Journey.departs)))
+        query = (
+            self.db
+            .query(Fare)
+            .filter_by(**self.farefilters)
+            .join(Fare.journey)
+            .options(joinedload(Fare.journey))
+            .filter_by(**self.journeyfilters)
+            .order_by(asc(Journey.departs))
+        )
 
         # Filter by date if requested.
         if self.args['date']:

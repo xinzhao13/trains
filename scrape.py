@@ -46,10 +46,11 @@ Request = namedtuple("Request", ["url", "date"])
 
 def build_reqs(src, dest):
     """Make list of Request objects. e.g. build_req('PAD', 'SAU')"""
-    return [Request(TMPL.format(src=src, dest=dest, date=d, time=t), d)
-            for d in DATES           # Every day from today to 90 days ahead
-            for t in TIMES[::3]]     # Every three hours (because each HTTP req
-                                     # yields about three hours worth of data)
+    return [
+        Request(TMPL.format(src=src, dest=dest, date=d, time=t), d)
+        for d in DATES       # Every day from today to 90 days ahead
+        for t in TIMES[::3]  # Every three hours (because each HTTP req
+    ]                        # yields about three hours worth of data)
 
 
 def process(req, delay):
@@ -190,9 +191,12 @@ def scrape(src, dest, delay=2):
         print("\nprocessing", req)
         for journey, fare in process(req, delay):
             print("scraped {}".format(journey['departs']), end="")
-            existing = (session.query(Journey)
-                               .filter(Journey.hash == journey['hash'])
-                               .one_or_none())
+            existing = (
+                session
+                .query(Journey)
+                .filter(Journey.hash == journey['hash'])
+                .one_or_none()
+            )
             if not existing:
                 # First time we've seen this journey.
                 j = Journey(**journey)
@@ -203,10 +207,13 @@ def scrape(src, dest, delay=2):
                 print("; added {} (new journey)".format(f.price))
             else:
                 # Only add this fare if no fares added to this journey in 23h.
-                fares = (session.query(Fare)
-                                .join(Fare.journey)
-                                .filter(Journey.jid == existing.jid)
-                                .all())
+                fares = (
+                    session
+                    .query(Fare)
+                    .join(Fare.journey)
+                    .filter(Journey.jid == existing.jid)
+                    .all()
+                )
                 now = dt.datetime.now()
                 mostrecent = min(fares, key=lambda x: abs(x.timestamp - now))
                 if abs(mostrecent.timestamp - now) > dt.timedelta(hours=23):
